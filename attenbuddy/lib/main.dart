@@ -47,7 +47,6 @@ class Store extends ChangeNotifier {
     var response =
         await http.post(url, body: {'userid': userId, 'password': password});
 
-    print(response.body);
     var decoded = json.decode(response.body);
 
     if (decoded['success'].toString().compareTo("True") == 0) {
@@ -67,7 +66,6 @@ class Store extends ChangeNotifier {
             courses.add(decoded['data'].elementAt(i));
         }
       }
-      print(decoded);
 
       url = 'https://attenbuddy.herokuapp.com/getstudent';
       response = await http.get(url);
@@ -138,6 +136,8 @@ class Store extends ChangeNotifier {
     List<Widget> wid = [];
 
     for (int i = 0; i < this.student.length; i++) {
+      print(this.student[i]['batch']);
+      if (this.student[i]['batch'].compareTo(batchId) != 0) continue;
       String check = absent.singleWhere(
           (element) => element == this.student[i]['userid'],
           orElse: () => null);
