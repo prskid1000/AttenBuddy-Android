@@ -2,7 +2,7 @@
 ![All Contributors](https://img.shields.io/github/contributors/prskid1000/CPMath)
 ![Last Commit](https://img.shields.io/github/last-commit/prskid1000/Template)
 
-![1](https://github.com/prskid1000/AttenBuddy-Android/blob/master/Preview/1.png?raw=true)
+![1](https://github.com/prskid1000/AttenBuddy-Android/blob/main/Preview/1.png?raw=true)
 
 ![2](https://github.com/prskid1000/AttenBuddy-Android/blob/master/Preview/2.png?raw=true)
 
