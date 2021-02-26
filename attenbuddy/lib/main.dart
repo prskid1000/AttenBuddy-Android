@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 
@@ -32,6 +33,7 @@ class Store extends ChangeNotifier {
   String dropsState = "none";
   String batchId = "0";
   DateTime selectedDate = DateTime.now();
+  int selectedIndex = 0;
 
   List<String> present;
   List<String> absent;
@@ -39,6 +41,19 @@ class Store extends ChangeNotifier {
   List<dynamic> courses;
   List<dynamic> student;
   List<String> list = ['none'];
+
+  void navigate(int data, BuildContext context) async {
+    switch (data) {
+      case 0:
+        notifyListeners();
+        Navigator.pushNamedAndRemoveUntil(context, "Dash", (r) => false);
+        break;
+      case 1:
+        SystemNavigator.pop();
+        break;
+    }
+    this.selectedIndex = data;
+  }
 
   Future setAuth(String userId, String password) async {
     this.userId = userId;
@@ -198,6 +213,8 @@ class Store extends ChangeNotifier {
     List<Widget> wid = [];
 
     for (int i = 0; i < this.student.length; i++) {
+      if (this.student[i]['batch'].compareTo(batchId) != 0) continue;
+
       String check = absent.singleWhere(
           (element) => element == this.student[i]['userid'],
           orElse: () => null);
@@ -276,7 +293,8 @@ class Account extends StatelessWidget {
                         padding: EdgeInsets.all(22),
                         child: Text(
                           'AttenBuddy',
-                          style: TextStyle(fontSize: 44, color: Colors.green),
+                          style: TextStyle(
+                              fontSize: 44, color: Colors.greenAccent),
                         )),
                     Container(
                       padding: EdgeInsets.all(10),
@@ -306,9 +324,10 @@ class Account extends StatelessWidget {
                             width: 385,
                             padding: EdgeInsets.fromLTRB(40, 20, 40, 0),
                             child: RaisedButton(
-                              textColor: Colors.white,
-                              color: Colors.green,
-                              child: Text('Log In'),
+                              textColor: Colors.black,
+                              color: Colors.greenAccent,
+                              child: Text('Log In',
+                                  style: TextStyle(fontSize: 24)),
                               onPressed: () async {
                                 await store.setAuth(text.text, password.text);
                                 if (store.level.compareTo("Denied") != 0) {
@@ -340,13 +359,23 @@ class Dash extends StatelessWidget {
                 padding: EdgeInsets.all(10),
                 child: ListView(
                   children: <Widget>[
-                    Container(
-                        alignment: Alignment.center,
-                        padding: EdgeInsets.all(22),
-                        child: Text(
-                          'Dashboard',
-                          style: TextStyle(fontSize: 48, color: Colors.green),
-                        )),
+                    BottomNavigationBar(
+                      items: const <BottomNavigationBarItem>[
+                        BottomNavigationBarItem(
+                          icon: Icon(Icons.account_balance_sharp,
+                              color: Colors.greenAccent),
+                          label: 'Home',
+                        ),
+                        BottomNavigationBarItem(
+                          icon: Icon(Icons.exit_to_app,
+                              color: Colors.greenAccent),
+                          label: 'Exit',
+                        ),
+                      ],
+                      currentIndex: store.selectedIndex,
+                      selectedItemColor: Colors.white,
+                      onTap: (index) => {store.navigate(index, context)},
+                    ),
                     Container(
                       alignment: Alignment.center,
                       padding: EdgeInsets.fromLTRB(10, 50, 20, 20),
@@ -364,7 +393,7 @@ class Dash extends StatelessWidget {
                           'Select date',
                           style: TextStyle(fontSize: 18, color: Colors.black),
                         ),
-                        color: Colors.green,
+                        color: Colors.greenAccent,
                       ),
                     ),
                     Container(
@@ -428,8 +457,8 @@ class Dash extends StatelessWidget {
                             width: 380,
                             padding: EdgeInsets.fromLTRB(70, 20, 70, 0),
                             child: RaisedButton(
-                              textColor: Colors.white,
-                              color: Colors.green,
+                              textColor: Colors.black,
+                              color: Colors.greenAccent,
                               child: Text(
                                 (store.level == "teacher") ? 'Review' : 'View',
                                 style: TextStyle(fontSize: 22),
@@ -450,8 +479,8 @@ class Dash extends StatelessWidget {
                           child: Opacity(
                               opacity: (store.level == "teacher") ? 1 : 0,
                               child: RaisedButton(
-                                textColor: Colors.white,
-                                color: Colors.green,
+                                textColor: Colors.black,
+                                color: Colors.greenAccent,
                                 child: Text(
                                   'Take',
                                   style: TextStyle(fontSize: 22),
@@ -480,11 +509,27 @@ class Attendance extends StatelessWidget {
     return Consumer<Store>(builder: (context, store, child) {
       return Scaffold(
           body: Padding(
-        padding: EdgeInsets.fromLTRB(20, 80, 20, 10),
+        padding: EdgeInsets.fromLTRB(20, 20, 20, 10),
         child: ListView(children: <Widget>[
+          BottomNavigationBar(
+            items: const <BottomNavigationBarItem>[
+              BottomNavigationBarItem(
+                icon: Icon(Icons.account_balance_sharp,
+                    color: Colors.greenAccent),
+                label: 'Home',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.exit_to_app, color: Colors.greenAccent),
+                label: 'Exit',
+              ),
+            ],
+            currentIndex: store.selectedIndex,
+            selectedItemColor: Colors.white,
+            onTap: (index) => {store.navigate(index, context)},
+          ),
           Container(
-            height: 550,
-            padding: EdgeInsets.fromLTRB(10, 15, 10, 5),
+            height: 530,
+            padding: EdgeInsets.fromLTRB(10, 30, 10, 5),
             child: ListView(
               children: store.listBuilder(context),
             ),
@@ -498,8 +543,8 @@ class Attendance extends StatelessWidget {
                 child: Opacity(
                     opacity: (store.level == "teacher") ? 1 : 0,
                     child: RaisedButton(
-                      textColor: Colors.white,
-                      color: Colors.green,
+                      textColor: Colors.black,
+                      color: Colors.greenAccent,
                       child: Text(
                         'Save',
                         style: TextStyle(fontSize: 22),
@@ -526,10 +571,26 @@ class viewAttendance extends StatelessWidget {
     return Consumer<Store>(builder: (context, store, child) {
       return Scaffold(
           body: Padding(
-        padding: EdgeInsets.fromLTRB(20, 80, 20, 10),
+        padding: EdgeInsets.fromLTRB(20, 20, 20, 10),
         child: ListView(children: <Widget>[
+          BottomNavigationBar(
+            items: const <BottomNavigationBarItem>[
+              BottomNavigationBarItem(
+                icon: Icon(Icons.account_balance_sharp,
+                    color: Colors.greenAccent),
+                label: 'Home',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.exit_to_app, color: Colors.greenAccent),
+                label: 'Exit',
+              ),
+            ],
+            currentIndex: store.selectedIndex,
+            selectedItemColor: Colors.white,
+            onTap: (index) => {store.navigate(index, context)},
+          ),
           Container(
-            height: 550,
+            height: 540,
             padding: EdgeInsets.fromLTRB(10, 15, 10, 5),
             child: ListView(
               children: store.listBuilder2(context),
@@ -538,23 +599,23 @@ class viewAttendance extends StatelessWidget {
           Row(
             children: [
               Container(
-                  height: 60,
-                  width: 300,
-                  padding: EdgeInsets.fromLTRB(70, 20, 10, 5),
-                  child: RaisedButton(
-                    textColor: Colors.white,
-                    color: Colors.green,
-                    child: Text(
-                      (store.level == "teacher") ? 'Modify' : 'Go Back',
-                      style: TextStyle(fontSize: 22),
-                    ),
-                    onPressed: () async {
-                      (store.level == "teacher")
-                          ? store.modify(context)
-                          : Navigator.pushNamedAndRemoveUntil(
-                              context, "Dash", (r) => false);
-                    },
-                  )),
+                height: 60,
+                width: 300,
+                padding: EdgeInsets.fromLTRB(70, 20, 10, 5),
+                child: Opacity(
+                    opacity: (store.level == "teacher") ? 1 : 0,
+                    child: RaisedButton(
+                      textColor: Colors.black,
+                      color: Colors.greenAccent,
+                      child: Text(
+                        'Modify',
+                        style: TextStyle(fontSize: 22),
+                      ),
+                      onPressed: () async {
+                        store.modify(context);
+                      },
+                    )),
+              ),
             ],
           ),
         ]),
