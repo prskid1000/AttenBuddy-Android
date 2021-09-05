@@ -1,6 +1,8 @@
-import 'package:android_app/layouts/account.dart';
-import 'package:android_app/layouts/home.dart';
-import 'package:android_app/store/store.dart';
+import 'package:AttenBuddy/layouts/account.dart';
+import 'package:AttenBuddy/layouts/attendance.dart';
+import 'package:AttenBuddy/layouts/attendanceView.dart';
+import 'package:AttenBuddy/layouts/home.dart';
+import 'package:AttenBuddy/store/store.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -35,7 +37,9 @@ void main() async {
           initialRoute: 'Account',
           routes: {
             'Account': (context) => Account(),
-            'Home': (context) => Home()
+            'Home': (context) => Home(),
+            'Attendance': (context) => Attendance(),
+            'AttendanceView': (context) => AttendanceView()
           },
           debugShowCheckedModeBanner: false,
         );

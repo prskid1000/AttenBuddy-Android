@@ -1,4 +1,4 @@
-import 'package:android_app/store/store.dart';
+import 'package:AttenBuddy/store/store.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -16,7 +16,7 @@ class Frame extends StatelessWidget {
 
         return Scaffold(
           appBar: AppBar(
-            title: Text("CE-Scanner"),
+            title: Text("AttenBuddy"),
             actions: <Widget>[
               IconButton(
                 icon: const Icon(Icons.lightbulb),
