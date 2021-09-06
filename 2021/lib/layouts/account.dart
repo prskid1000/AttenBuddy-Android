@@ -70,10 +70,16 @@ class Account extends StatelessWidget {
                         child: RaisedButton(
                           onPressed: () async {
                             await store.setAuth();
-                            if (store.level.compareTo("Denied") != 0) {
+                            if (store.level == "teacher" ||
+                                store.level == "student") {
                               store.selectedIndex = 0;
                               Navigator.pushNamedAndRemoveUntil(
                                   context, "Home", (r) => false);
+                            }
+                            if (store.level == "admin") {
+                              store.selectedAIndex = 0;
+                              Navigator.pushNamedAndRemoveUntil(
+                                  context, "AHome", (r) => false);
                             }
                           },
                           shape: RoundedRectangleBorder(

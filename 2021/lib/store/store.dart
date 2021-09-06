@@ -12,6 +12,7 @@ class Store extends ChangeNotifier {
 
   String theme = 'dark';
   int selectedIndex = 0;
+  int selectedAIndex = 0;
 
   String userId = "";
   String password = "";
@@ -27,7 +28,80 @@ class Store extends ChangeNotifier {
 
   List<dynamic> courses;
   List<dynamic> student;
+  List<dynamic> teacher;
   List<String> list = ['none'];
+
+  String cName = "";
+  String cTeacher = "";
+  String cYear = "";
+
+  String tUserId = "";
+  String tPassword = "";
+
+  String sUserId = "";
+  String sBatch = "";
+  String sPassword = "";
+
+  Future addCourse() async {
+    var url = Uri.https(dotenv.env['SERVER'], "/add_course");
+    var response = await http.post(url, body: {
+      'course': this.cName,
+      'teacher': this.cTeacher,
+      'year': this.cYear
+    });
+    print(response.body);
+    await this.globSync();
+    return true;
+  }
+
+  Future addTeacher() async {
+    var url = Uri.https(dotenv.env['SERVER'], "/add_teacher");
+    var response = await http.post(url, body: {
+      'userid': this.tUserId,
+      'password': this.tPassword,
+    });
+    await this.globSync();
+    return true;
+    ;
+  }
+
+  Future addStudent() async {
+    var url = Uri.https(dotenv.env['SERVER'], "/add_student");
+    var response = await http.post(url, body: {
+      'userid': this.sUserId,
+      'password': this.sPassword,
+      'batch': this.sBatch
+    });
+    await this.globSync();
+    return true;
+  }
+
+  Future deleteCourse(String crs, String tch, String yrs) async {
+    var url = Uri.https(dotenv.env['SERVER'], "/delete_course");
+    var response = await http
+        .post(url, body: {'course': crs, 'teacher': tch, 'year': yrs});
+    var decoded = json.decode(response.body);
+    await this.globSync();
+    return true;
+  }
+
+  Future deleteTeacher(String user, String pass) async {
+    var url = Uri.https(dotenv.env['SERVER'], "/delete_teacher");
+    var response =
+        await http.post(url, body: {'userid': user, 'password': pass});
+    var decoded = json.decode(response.body);
+    await this.globSync();
+    return true;
+  }
+
+  Future deleteStudent(String user, String pass) async {
+    var url = Uri.https(dotenv.env['SERVER'], "/delete_student");
+    var response =
+        await http.post(url, body: {'userid': user, 'password': pass});
+    var decoded = json.decode(response.body);
+    await this.globSync();
+    return true;
+  }
 
   void toggleTheme(context) {
     if (this.theme.compareTo('dark') == 0) {
@@ -43,11 +117,9 @@ class Store extends ChangeNotifier {
   void navigate(int data, BuildContext context) async {
     switch (data) {
       case 0:
-        notifyListeners();
         Navigator.pushNamedAndRemoveUntil(context, "Home", (r) => false);
         break;
       case 1:
-        notifyListeners();
         Navigator.pushNamedAndRemoveUntil(context, "Account", (r) => false);
         break;
       case 2:
@@ -55,6 +127,78 @@ class Store extends ChangeNotifier {
         break;
     }
     this.selectedIndex = data;
+    notifyListeners();
+  }
+
+  void aNavigate(int data, BuildContext context) async {
+    switch (data) {
+      case 0:
+        Navigator.pushNamedAndRemoveUntil(context, "AHome", (r) => false);
+        break;
+      case 1:
+        Navigator.pushNamedAndRemoveUntil(context, "Student", (r) => false);
+        break;
+      case 2:
+        Navigator.pushNamedAndRemoveUntil(context, "Teacher", (r) => false);
+        break;
+      case 3:
+        Navigator.pushNamedAndRemoveUntil(context, "Course", (r) => false);
+        break;
+    }
+    this.selectedAIndex = data;
+    notifyListeners();
+  }
+
+  Future globSync() async {
+    var url = Uri.https(dotenv.env['SERVER'], "/getcourse");
+    var response = await http.get(url);
+    var decoded = json.decode(response.body);
+
+    this.list = decoded['data'].length > 0 ? [] : ['none'];
+    this.courses = [];
+    for (var i = 0; i < decoded['data'].length; i++) {
+      if (decoded['data'].elementAt(i)['teacher'].compareTo(this.userId) == 0) {
+        this.list.add(decoded['data'].elementAt(i)['name']);
+        if (this.courses == null)
+          this.courses = [decoded['data'].elementAt(i)];
+        else
+          this.courses.add(decoded['data'].elementAt(i));
+      }
+    }
+
+    print(this.courses);
+
+    url = Uri.https(dotenv.env['SERVER'], "/getteacher");
+    response = await http.get(url);
+    decoded = json.decode(response.body);
+
+    this.teacher = [];
+    for (var i = 0; i < decoded['data'].length; i++) {
+      if (this.teacher == null) {
+        this.teacher = [decoded['data'].elementAt(i)];
+      } else {
+        this.teacher.add(decoded['data'].elementAt(i));
+      }
+    }
+
+    url = Uri.https(dotenv.env['SERVER'], "/getstudent");
+    response = await http.get(url);
+    decoded = json.decode(response.body);
+
+    this.student = [];
+    this.absent = [];
+    this.present = [];
+    for (var i = 0; i < decoded['data'].length; i++) {
+      if (this.student == null) {
+        this.student = [decoded['data'].elementAt(i)];
+        this.absent = [decoded['data'].elementAt(i)['userid']];
+      } else {
+        this.student.add(decoded['data'].elementAt(i));
+        this.absent.add(decoded['data'].elementAt(i)['userid']);
+      }
+    }
+
+    notifyListeners();
   }
 
   Future setAuth() async {
@@ -64,40 +208,11 @@ class Store extends ChangeNotifier {
 
     var decoded = json.decode(response.body);
 
+    print(response.body);
+
     if (decoded['success'].toString().compareTo("True") == 0) {
       this.level = decoded['data']['level'];
-
-      url = Uri.https(dotenv.env['SERVER'], "/getcourse");
-      response = await http.get(url);
-      decoded = json.decode(response.body);
-
-      list = ['none'];
-      for (var i = 0; i < decoded['data'].length; i++) {
-        if (decoded['data'].elementAt(i)['teacher'].compareTo(userId) == 0) {
-          list.add(decoded['data'].elementAt(i)['name']);
-          if (courses == null)
-            courses = [decoded['data'].elementAt(i)];
-          else
-            courses.add(decoded['data'].elementAt(i));
-        }
-      }
-
-      url = Uri.https(dotenv.env['SERVER'], "/getstudent");
-      response = await http.get(url);
-      decoded = json.decode(response.body);
-
-      student = [];
-      absent = [];
-      present = [];
-      for (var i = 0; i < decoded['data'].length; i++) {
-        if (student == null) {
-          student = [decoded['data'].elementAt(i)];
-          absent = [decoded['data'].elementAt(i)['userid']];
-        } else {
-          student.add(decoded['data'].elementAt(i));
-          absent.add(decoded['data'].elementAt(i)['userid']);
-        }
-      }
+      this.globSync();
     }
     notifyListeners();
   }
@@ -241,6 +356,349 @@ class Store extends ChangeNotifier {
           },
         ),
       ));
+    }
+
+    return wid;
+  }
+
+  List<Widget> listBuilder3(BuildContext context) {
+    List<Widget> wid = [];
+    if (this.student == null) return [];
+    for (int i = 0; i < this.student.length; i++) {
+      wid.add(Card(
+          child: Column(
+        children: [
+          Container(
+              padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+              child: Row(
+                children: [
+                  Text(
+                    'UserId',
+                    textAlign: TextAlign.start,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color:
+                            this.theme == 'dark' ? Colors.white : Colors.black),
+                  )
+                ],
+              )),
+          Container(
+              padding: EdgeInsets.fromLTRB(20, 10, 10, 10),
+              child: Row(
+                children: [
+                  Text(
+                    this.student[i]['userid'],
+                    textAlign: TextAlign.start,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color:
+                            this.theme == 'dark' ? Colors.white : Colors.black),
+                  )
+                ],
+              )),
+          Container(
+              padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+              child: Row(
+                children: [
+                  Text(
+                    'Password',
+                    textAlign: TextAlign.start,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color:
+                            this.theme == 'dark' ? Colors.white : Colors.black),
+                  )
+                ],
+              )),
+          Container(
+              padding: EdgeInsets.fromLTRB(20, 10, 10, 10),
+              child: Row(
+                children: [
+                  Text(
+                    this.student[i]['password'],
+                    textAlign: TextAlign.start,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color:
+                            this.theme == 'dark' ? Colors.white : Colors.black),
+                  )
+                ],
+              )),
+          Container(
+              padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+              child: Row(
+                children: [
+                  Text(
+                    'Batch',
+                    textAlign: TextAlign.start,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color:
+                            this.theme == 'dark' ? Colors.white : Colors.black),
+                  )
+                ],
+              )),
+          Container(
+              padding: EdgeInsets.fromLTRB(20, 10, 10, 10),
+              child: Row(
+                children: [
+                  Text(
+                    this.student[i]['batch'],
+                    textAlign: TextAlign.start,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color:
+                            this.theme == 'dark' ? Colors.white : Colors.black),
+                  )
+                ],
+              )),
+          Container(
+              padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.delete),
+                    tooltip: 'Delete',
+                    onPressed: () {
+                      this.deleteStudent(this.student[i]['userid'],
+                          this.student[i]['password']);
+                    },
+                  ),
+                ],
+              )),
+        ],
+      )));
+    }
+
+    return wid;
+  }
+
+  List<Widget> listBuilder4(BuildContext context) {
+    List<Widget> wid = [];
+    if (this.teacher == null) return [];
+    for (int i = 0; i < this.teacher.length; i++) {
+      wid.add(Card(
+          child: Column(
+        children: [
+          Container(
+              padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+              child: Row(
+                children: [
+                  Text(
+                    'UserId',
+                    textAlign: TextAlign.start,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color:
+                            this.theme == 'dark' ? Colors.white : Colors.black),
+                  )
+                ],
+              )),
+          Container(
+              padding: EdgeInsets.fromLTRB(20, 10, 10, 10),
+              child: Row(
+                children: [
+                  Text(
+                    this.teacher[i]['userid'],
+                    textAlign: TextAlign.start,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color:
+                            this.theme == 'dark' ? Colors.white : Colors.black),
+                  )
+                ],
+              )),
+          Container(
+              padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+              child: Row(
+                children: [
+                  Text(
+                    'Password',
+                    textAlign: TextAlign.start,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color:
+                            this.theme == 'dark' ? Colors.white : Colors.black),
+                  )
+                ],
+              )),
+          Container(
+              padding: EdgeInsets.fromLTRB(20, 10, 10, 10),
+              child: Row(
+                children: [
+                  Text(
+                    this.teacher[i]['password'],
+                    textAlign: TextAlign.start,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color:
+                            this.theme == 'dark' ? Colors.white : Colors.black),
+                  )
+                ],
+              )),
+          Container(
+              padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.delete),
+                    tooltip: 'Delete',
+                    onPressed: () {
+                      this.deleteTeacher(this.teacher[i]['userid'],
+                          this.teacher[i]['password']);
+                    },
+                  ),
+                ],
+              )),
+        ],
+      )));
+    }
+
+    return wid;
+  }
+
+  List<Widget> listBuilder5(BuildContext context) {
+    List<Widget> wid = [];
+    if (this.courses == null) return [];
+    for (int i = 0; i < this.courses.length; i++) {
+      wid.add(Card(
+          child: Column(
+        children: [
+          Container(
+              padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+              child: Row(
+                children: [
+                  Text(
+                    'Name',
+                    textAlign: TextAlign.start,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color:
+                            this.theme == 'dark' ? Colors.white : Colors.black),
+                  )
+                ],
+              )),
+          Container(
+              padding: EdgeInsets.fromLTRB(20, 10, 10, 10),
+              child: Row(
+                children: [
+                  Text(
+                    this.courses[i]['name'],
+                    textAlign: TextAlign.start,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color:
+                            this.theme == 'dark' ? Colors.white : Colors.black),
+                  )
+                ],
+              )),
+          Container(
+              padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+              child: Row(
+                children: [
+                  Text(
+                    'Teacher',
+                    textAlign: TextAlign.start,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color:
+                            this.theme == 'dark' ? Colors.white : Colors.black),
+                  )
+                ],
+              )),
+          Container(
+              padding: EdgeInsets.fromLTRB(20, 10, 10, 10),
+              child: Row(
+                children: [
+                  Text(
+                    this.courses[i]['teacher'],
+                    textAlign: TextAlign.start,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color:
+                            this.theme == 'dark' ? Colors.white : Colors.black),
+                  )
+                ],
+              )),
+          Container(
+              padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+              child: Row(
+                children: [
+                  Text(
+                    'Year',
+                    textAlign: TextAlign.start,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color:
+                            this.theme == 'dark' ? Colors.white : Colors.black),
+                  )
+                ],
+              )),
+          Container(
+              padding: EdgeInsets.fromLTRB(20, 10, 10, 10),
+              child: Row(
+                children: [
+                  Text(
+                    this.courses[i]['year'],
+                    textAlign: TextAlign.start,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color:
+                            this.theme == 'dark' ? Colors.white : Colors.black),
+                  )
+                ],
+              )),
+          Container(
+              padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.delete),
+                    tooltip: 'Delete',
+                    onPressed: () {
+                      this.deleteCourse(this.courses[i]['name'],
+                          this.courses[i]['teacher'], this.courses[i]['year']);
+                    },
+                  ),
+                ],
+              )),
+        ],
+      )));
     }
 
     return wid;

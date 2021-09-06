@@ -18,6 +18,26 @@
 
 ![4](https://github.com/prskid1000/AttenBuddy-Android/blob/main/Preview/8.png?raw=true)
 
+![1](https://github.com/prskid1000/AttenBuddy-Android/blob/main/Preview/9.png?raw=true)
+
+![2](https://github.com/prskid1000/AttenBuddy-Android/blob/main/Preview/10.png?raw=true)
+
+![3](https://github.com/prskid1000/AttenBuddy-Android/blob/main/Preview/11.png?raw=true)
+
+![4](https://github.com/prskid1000/AttenBuddy-Android/blob/main/Preview/12.png?raw=true)
+
+![1](https://github.com/prskid1000/AttenBuddy-Android/blob/main/Preview/13.png?raw=true)
+
+![2](https://github.com/prskid1000/AttenBuddy-Android/blob/main/Preview/14.png?raw=true)
+
+![3](https://github.com/prskid1000/AttenBuddy-Android/blob/main/Preview/15.png?raw=true)
+
+![4](https://github.com/prskid1000/AttenBuddy-Android/blob/main/Preview/16.png?raw=true)
+
+![3](https://github.com/prskid1000/AttenBuddy-Android/blob/main/Preview/17.png?raw=true)
+
+![4](https://github.com/prskid1000/AttenBuddy-Android/blob/main/Preview/18.png?raw=true)
+
 
 
 
