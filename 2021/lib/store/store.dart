@@ -154,15 +154,20 @@ class Store extends ChangeNotifier {
     var response = await http.get(url);
     var decoded = json.decode(response.body);
 
-    this.list = decoded['data'].length > 0 ? [] : ['none'];
+    this.list = ['none'];
     this.courses = [];
     for (var i = 0; i < decoded['data'].length; i++) {
       if (decoded['data'].elementAt(i)['teacher'].compareTo(this.userId) == 0) {
-        this.list.add(decoded['data'].elementAt(i)['name']);
-        if (this.courses == null)
-          this.courses = [decoded['data'].elementAt(i)];
-        else
-          this.courses.add(decoded['data'].elementAt(i));
+        if (this.list == null) {
+          this.list = [decoded['data'].elementAt(i)['name']];
+        } else {
+          this.list.add(decoded['data'].elementAt(i)['name']);
+        }
+      }
+      if (this.courses == null) {
+        this.courses = [decoded['data'].elementAt(i)];
+      } else {
+        this.courses.add(decoded['data'].elementAt(i));
       }
     }
 
